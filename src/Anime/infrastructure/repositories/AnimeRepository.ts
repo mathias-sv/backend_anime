@@ -11,8 +11,6 @@ export class AnimeRepository implements IAnimeRepository {
   async getAnime(id: number): Promise<Anime[]> {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-
-    // Desactivar la carga de imágenes
     await page.setRequestInterception(true);
     page.on('request', (req) => {
         if (req.resourceType() === 'image'){
