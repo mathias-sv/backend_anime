@@ -79,7 +79,6 @@ export class AnimeRepository implements IAnimeRepository {
             return { id, link, backgroundImageUrl, name, bookType, genero };
         });
     });
-    console.log(elements[0].backgroundImageUrl);
     await browser.close();
     return elements.map(element => new Anime(element.id, element.name, element.link, element.bookType, element.genero, element.backgroundImageUrl));
   }
