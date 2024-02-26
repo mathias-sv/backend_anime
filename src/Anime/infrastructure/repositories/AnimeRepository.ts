@@ -46,7 +46,7 @@ export class AnimeRepository implements IAnimeRepository {
     await browser.close();
     return elements.map(element => new Anime(element.id, element.name, element.link, element.bookType, element.genero, element.backgroundImageUrl));
   }
-  async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, id?: number): Promise<Anime[]> {
+  async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, id?: number, filter_by?: string): Promise<Anime[]> {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -59,7 +59,7 @@ export class AnimeRepository implements IAnimeRepository {
         }
     });
   
-    const url = `https://visortmo.com/library?order_item=${filters}&order_dir=${order_dir}&title=${busqueda}&_pg=${id}&filter_by=author&type=&demography=&status=&translation_status=&webcomic=&yonkoma=&amateur=&erotic=`;
+    const url = `https://visortmo.com/library?order_item=${filters}&order_dir=${order_dir}&title=${busqueda}&_pg=${id}&filter_by=${filter_by}&type=&demography=&status=&translation_status=&webcomic=&yonkoma=&amateur=&erotic=`;
     await page.goto(url, { waitUntil: 'domcontentloaded' });
   
     const elements = await page.evaluate(() => {

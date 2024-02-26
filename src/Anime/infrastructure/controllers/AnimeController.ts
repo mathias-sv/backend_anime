@@ -18,9 +18,9 @@ export class AnimeController {
     }
   }
   @Get('search')
-  async getFilteredAnime(@Query('busqueda') busqueda: string, @Query('filters') filters?: string, @Query('order_dir') order_dir?: string, @Query('id') id?: number) {
+  async getFilteredAnime(@Query('busqueda') busqueda: string, @Query('filters') filters?: string, @Query('order_dir') order_dir?: string, @Query('id') id?: number, @Query('filter_by') filter_by?: string) {
     try{
-      const serviceresult = await this.animeService.getFilteredAnime(busqueda, filters, order_dir, id);
+      const serviceresult = await this.animeService.getFilteredAnime(busqueda, filters, order_dir, id, filter_by);
       return serviceresult
     }catch(e){
       throw e;
