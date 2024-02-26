@@ -13,7 +13,7 @@ export class AnimeService implements IAnimeService {
   async getAnime(id: number): Promise<Anime[]> {
     return this.animeRepository.getAnime(id);
   }
-  async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, id?: number, filter_by?: string): Promise<Anime[]> {
-    return this.animeRepository.getFilteredAnime(busqueda, filters, order_dir, id, filter_by);
+  async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, pages?: number, filter_by?: string): Promise<Anime[]> {
+    return this.animeRepository.getFilteredAnime(busqueda, filters, order_dir, pages, filter_by);
   }
 }

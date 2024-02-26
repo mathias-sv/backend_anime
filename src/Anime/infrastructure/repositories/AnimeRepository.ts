@@ -30,7 +30,7 @@ export class AnimeRepository implements IAnimeRepository {
         return nodes.map(node => {
             const id = node.getAttribute('data-identifier');
             const link = node.querySelector('a')?.getAttribute('href');
-            const styleContent = node.querySelector('.thumbnail')?.getAttribute('style');
+            const styleContent = node.querySelector('.thumbnail style')?.textContent;
             const backgroundImageUrl = styleContent?.match(/url\(["']?(.*?)["']?\)/i)?.[1];
             const name = node.querySelector('h4.text-truncate')?.getAttribute('title');
             const bookType = node.querySelector('.book-type')?.textContent;
@@ -46,7 +46,7 @@ export class AnimeRepository implements IAnimeRepository {
     await browser.close();
     return elements.map(element => new Anime(element.id, element.name, element.link, element.bookType, element.genero, element.backgroundImageUrl));
   }
-  async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, id?: number, filter_by?: string): Promise<Anime[]> {
+  async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, pages?: number, filter_by?: string): Promise<Anime[]> {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -59,7 +59,7 @@ export class AnimeRepository implements IAnimeRepository {
         }
     });
   
-    const url = `https://visortmo.com/library?order_item=${filters}&order_dir=${order_dir}&title=${busqueda}&_pg=${id}&filter_by=${filter_by}&type=&demography=&status=&translation_status=&webcomic=&yonkoma=&amateur=&erotic=`;
+    const url = `https://visortmo.com/library?order_item=${filters}&order_dir=${order_dir}&title=${busqueda}&_pg=1&filter_by=${filter_by}&type=&demography=&status=&translation_status=&webcomic=&yonkoma=&amateur=&erotic=&page=${pages}`;
     await page.goto(url, { waitUntil: 'domcontentloaded' });
   
     const elements = await page.evaluate(() => {
@@ -67,19 +67,19 @@ export class AnimeRepository implements IAnimeRepository {
         return nodes.map(node => {
             const id = node.getAttribute('data-identifier');
             const link = node.querySelector('a')?.getAttribute('href');
-            const styleContent = node.querySelector('.thumbnail')?.getAttribute('style');
+            const styleContent = node.querySelector('.thumbnail style')?.textContent;
             const backgroundImageUrl = styleContent?.match(/url\(["']?(.*?)["']?\)/i)?.[1];
             const name = node.querySelector('h4.text-truncate')?.getAttribute('title');
             const bookType = node.querySelector('.book-type')?.textContent;
             const demographyNode = node.querySelector('.demography');
             const genero = {
-                description: demographyNode?.textContent,
-                title: demographyNode?.getAttribute('title')
+                title: demographyNode?.textContent,
+                description: demographyNode?.getAttribute('title')
             };
             return { id, link, backgroundImageUrl, name, bookType, genero };
         });
     });
-    console.log(elements);
+    console.log(elements[0].backgroundImageUrl);
     await browser.close();
     return elements.map(element => new Anime(element.id, element.name, element.link, element.bookType, element.genero, element.backgroundImageUrl));
   }
