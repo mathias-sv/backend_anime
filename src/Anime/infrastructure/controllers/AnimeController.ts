@@ -24,7 +24,7 @@ export class AnimeController {
   //order_dir = desc (descendente), asc (ascendente)
   //pages = numero de paginas
   //filter_by = title (titulo), author (autor), company (compañia)
-  async getFilteredAnime(@Query('busqueda') busqueda: string, @Query('filters') filters?: string, @Query('order_dir') order_dir?: string, @Query('pages') pages?: number, @Query('filter_by') filter_by?: string, @Query('filtros') filtros?: number[]) {
+  async getFilteredAnime(@Query('busqueda') busqueda: string, @Query('filters') filters?: string, @Query('order_dir') order_dir?: string, @Query('pages') pages?: number, @Query('filter_by') filter_by?: string, @Query('filtros') filtros?: string) {
     try{
       const serviceresult = await this.animeService.getFilteredAnime(busqueda, filters, order_dir, pages, filter_by, filtros);
       return serviceresult
