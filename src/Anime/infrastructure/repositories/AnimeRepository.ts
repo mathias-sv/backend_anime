@@ -7,8 +7,7 @@ import * as puppeteer from 'puppeteer';
 @Injectable()
 export class AnimeRepository implements IAnimeRepository {
   constructor(private httpService: HttpService) {}
-
-  async getAnime(id: number): Promise<Anime[]> {
+  private async setupPuppeteer() {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.setRequestInterception(true);
@@ -20,6 +19,10 @@ export class AnimeRepository implements IAnimeRepository {
             req.continue();
         }
     });
+    return { browser, page };
+  }
+  async getAnime(id: number): Promise<Anime[]> {
+    const { browser, page } = await this.setupPuppeteer();
 
     await page.goto(`https://visortmo.com/library?_pg=1&page=${id}`, { waitUntil: 'domcontentloaded' });
 
@@ -45,17 +48,7 @@ export class AnimeRepository implements IAnimeRepository {
     return elements.map(element => new Anime(element.id, element.name, element.link, element.bookType, element.genero, element.backgroundImageUrl));
   }
   async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, pages?: number, filter_by?: string, filtros?: string): Promise<Anime[]> {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on('request', (req) => {
-        if (req.resourceType() === 'image'){
-            req.abort();
-        }
-        else {
-            req.continue();
-        }
-    });
+    const { browser, page } = await this.setupPuppeteer();
     let filtrosString = '';
     console.log(filtros);
     if (filtros) {
@@ -65,7 +58,6 @@ export class AnimeRepository implements IAnimeRepository {
     }
     const url = `https://visortmo.com/library?order_item=${filters}&order_dir=${order_dir}&title=${busqueda}&_pg=1&filter_by=${filter_by}&type=&demography=&status=&translation_status=&webcomic=&yonkoma=&amateur=&erotic=&page=${pages}${filtrosString}`;
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    console.log(url);
     const elements = await page.evaluate(() => {
         const nodes = Array.from(document.querySelectorAll('div.element'));
         return nodes.map(node => {
@@ -85,5 +77,37 @@ export class AnimeRepository implements IAnimeRepository {
     });
     await browser.close();
     return elements.map(element => new Anime(element.id, element.name, element.link, element.bookType, element.genero, element.backgroundImageUrl));
+  }
+  async getDescription(url: string){
+    const { browser, page } = await this.setupPuppeteer();
+    const urlanime = url;
+    await page.goto(urlanime, { waitUntil: 'domcontentloaded' });
+    const chapters = await page.$$eval('#chapters > ul > li', (chapters) => {
+        return chapters.map((chapter) => {
+          const numerocaps = chapter.querySelector('h4 > div > div.col-10.text-truncate > a').textContent;
+          const editorials = Array.from(chapter.querySelectorAll('div > div > ul > li')).map(li => {
+            let editorialName = li.querySelector('div > div.col-4.col-md-6.text-truncate > span').textContent;
+            editorialName = editorialName.replace(/\s+/g, ' ').trim();
+            const editorialLink = li.querySelector('div > div.col-2.col-sm-1.text-right > a')?.getAttribute('href');
+            return { editorialName, editorialLink };
+          });
+          return { numerocaps, editorials };
+        });
+      });
+    const additionalChapters = await page.$$eval('#chapters > ul > div > li', (additionalChapters) => {
+        return additionalChapters.map((chapter) => {
+          const numerocaps = chapter.querySelector('h4 > div > div.col-10.text-truncate > a').textContent;
+          const editorials = Array.from(chapter.querySelectorAll('div > div > ul > li')).map(li => {
+            let editorialName = li.querySelector('div > div.col-4.col-md-6.text-truncate > span').textContent;
+            editorialName = editorialName.replace(/\s+/g, ' ').trim();
+            const editorialLink = li.querySelector('div > div.col-2.col-sm-1.text-right > a')?.getAttribute('href');
+            return { editorialName, editorialLink };
+          });
+          return { numerocaps, editorials};
+        });
+    });
+    const chaptersArray = chapters.concat(additionalChapters);
+    await browser.close();
+    return chaptersArray;
   }
 }

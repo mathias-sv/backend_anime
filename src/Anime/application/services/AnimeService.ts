@@ -16,4 +16,7 @@ export class AnimeService implements IAnimeService {
   async getFilteredAnime(busqueda: string, filters?: string, order_dir?: string, pages?: number, filter_by?: string, filtros?: string): Promise<Anime[]> {
     return this.animeRepository.getFilteredAnime(busqueda, filters, order_dir, pages, filter_by, filtros);
   }
+  async getDescription(url: string) {
+    return this.animeRepository.getDescription(url);
+  }
 }
