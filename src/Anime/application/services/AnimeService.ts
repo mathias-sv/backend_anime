@@ -19,4 +19,7 @@ export class AnimeService implements IAnimeService {
   async getDescription(url: string) {
     return this.animeRepository.getDescription(url);
   }
+  async getImagenes(url: string) {
+    return this.animeRepository.getImagenes(url);
+  }
 }

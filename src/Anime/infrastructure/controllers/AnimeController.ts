@@ -36,10 +36,20 @@ export class AnimeController {
     }
   }
   //edpoint para obtener capitulos de un anime
+  //header url = https://visortmo.com/library/manga/624/one-piece
   @Get('description')
   async getDescription(@Headers('url') url: string) {
     try{
       const serviceresult = await this.animeService.getDescription(url);
+      return serviceresult
+    }catch(e){
+      throw e;
+    }
+  }
+  @Get('image')
+  async getImagenes(@Headers('url') url: string) {
+    try{
+      const serviceresult = await this.animeService.getImagenes(url);
       return serviceresult
     }catch(e){
       throw e;

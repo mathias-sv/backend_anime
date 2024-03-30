@@ -82,13 +82,29 @@ export class AnimeRepository implements IAnimeRepository {
     const { browser, page } = await this.setupPuppeteer();
     const urlanime = url;
     await page.goto(urlanime, { waitUntil: 'domcontentloaded' });
+    let title = await page.$eval('div.col-12.col-md-9.element-header-content-text > h1', h1 => h1.textContent);
+    title = title.trim().replace(/\s\s+/g, ' ');
+    const description = await page.$eval('p.element-description', p => p.textContent);
+    const estado = await page.$eval('span.book-status.publishing', span => span.textContent);
+    const generos = await page.$$eval('div.col-12.col-md-9.element-header-content-text > h6', (result) => {
+      return result.map((genero) => {
+        const anchor = genero.querySelector('a');
+        return {
+          text: genero.textContent,
+          href: anchor ? anchor.getAttribute('href') : null
+        };
+      });
+    });
     const chapters = await page.$$eval('#chapters > ul > li', (chapters) => {
         return chapters.map((chapter) => {
           const numerocaps = chapter.querySelector('h4 > div > div.col-10.text-truncate > a').textContent;
           const editorials = Array.from(chapter.querySelectorAll('div > div > ul > li')).map(li => {
             let editorialName = li.querySelector('div > div.col-4.col-md-6.text-truncate > span').textContent;
             editorialName = editorialName.replace(/\s+/g, ' ').trim();
-            const editorialLink = li.querySelector('div > div.col-2.col-sm-1.text-right > a')?.getAttribute('href');
+            let editorialLink = li.querySelector('div > div.col-2.col-sm-1.text-right > a')?.getAttribute('href');
+            if (editorialLink) {
+              editorialLink = editorialLink.replace('https://visortmo.com', 'https://lectortmo.com');
+            }
             return { editorialName, editorialLink };
           });
           return { numerocaps, editorials };
@@ -100,14 +116,36 @@ export class AnimeRepository implements IAnimeRepository {
           const editorials = Array.from(chapter.querySelectorAll('div > div > ul > li')).map(li => {
             let editorialName = li.querySelector('div > div.col-4.col-md-6.text-truncate > span').textContent;
             editorialName = editorialName.replace(/\s+/g, ' ').trim();
-            const editorialLink = li.querySelector('div > div.col-2.col-sm-1.text-right > a')?.getAttribute('href');
+            let editorialLink = li.querySelector('div > div.col-2.col-sm-1.text-right > a')?.getAttribute('href');
+            if (editorialLink) {
+              editorialLink = editorialLink.replace('https://visortmo.com', 'https://lectortmo.com');
+            }
             return { editorialName, editorialLink };
           });
           return { numerocaps, editorials};
         });
     });
     const chaptersArray = chapters.concat(additionalChapters);
+    const result = { title, description,generos ,estado , chapters: chaptersArray };
     await browser.close();
-    return chaptersArray;
+    return result;
   }
+  async getImagenes(url: string){
+    const { browser, page } = await this.setupPuppeteer();
+    const urlcap = url;
+    await page.setExtraHTTPHeaders({
+      'Referer': 'https://visortmo.com'
+    });
+    await page.goto(urlcap, { waitUntil: 'domcontentloaded' });
+    await page.click('nav > div > div:nth-child(4) > a')
+    await page.waitForSelector('#app > header > nav > div > div:nth-child(4) > a > span');
+    const imgsinformat = await page.$$eval('#main-container > div', (imgs) => {
+      return imgs.map((img) => {
+        const imgurl = img.querySelector('img').getAttribute('data-src');
+        return imgurl;
+      });
+    });
+    console.log(imgsinformat);
+    return imgsinformat;
+  } 
 }
