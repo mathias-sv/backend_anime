@@ -46,7 +46,7 @@ export class AnimeController {
       throw e;
     }
   }
-  //trae las imagenes de la url
+  //trae las imagenes de la url 1
   @Get('image')
   async getImagenes(@Headers('url') url: string) {
     try{
